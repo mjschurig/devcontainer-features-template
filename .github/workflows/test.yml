@@ -254,16 +254,16 @@ jobs:
       - name: Test feature combinations
         run: |
           # Create a temporary devcontainer.json to test feature combinations
-          mkdir -p .test-combinations
-          cat > .test-combinations/devcontainer.json << 'EOF'
+          mkdir -p .test-combinations/.devcontainer
+          cat > .test-combinations/.devcontainer/devcontainer.json << 'EOF'
           {
             "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
             "features": {
-              "./src/hello-world": {
+              "../src/hello-world": {
                 "greeting": "Hi",
                 "name": "CI"
               },
-              "./src/hello-universe": {
+              "../src/hello-universe": {
                 "scope": "galaxy",
                 "language": "spanish"
               }
@@ -272,6 +272,7 @@ jobs:
           EOF
 
           # Test the combination
+          echo "Testing feature combinations with devcontainer CLI..."
           devcontainer up --workspace-folder .test-combinations
           devcontainer exec --workspace-folder .test-combinations hello-world
           devcontainer exec --workspace-folder .test-combinations hello-universe
