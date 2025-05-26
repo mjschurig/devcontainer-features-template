@@ -35,7 +35,7 @@ fi
 # Idempotency check
 if command -v hello-world >/dev/null 2>&1; then
     echo "hello-world command already exists. Checking if it needs to be updated..."
-    
+
     # Check if our version is already installed
     if hello-world --version 2>/dev/null | grep -q "hello-world 1.0.0"; then
         echo "hello-world feature already installed with correct version. Skipping installation."
@@ -137,7 +137,7 @@ chmod +x "$SCRIPT_PATH"
 # Verify installation
 if command -v hello-world >/dev/null 2>&1; then
     echo "✓ hello-world command installed successfully"
-    
+
     # Test the installation
     echo "Testing installation:"
     hello-world --version
@@ -150,7 +150,7 @@ fi
 # Set up environment for non-root user if specified
 if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != "root" ]; then
     echo "Setting up environment for user: $_REMOTE_USER"
-    
+
     # Ensure the user can access the command
     if [ -d "$_REMOTE_USER_HOME" ]; then
         # Add a note to the user's profile about the new command
@@ -159,7 +159,7 @@ if [ -n "$_REMOTE_USER" ] && [ "$_REMOTE_USER" != "root" ]; then
             echo "" >> "$PROFILE_FILE"
             echo "# hello-world feature installed" >> "$PROFILE_FILE"
             echo "# Use 'hello-world --help' for usage information" >> "$PROFILE_FILE"
-            
+
             # Change ownership to the remote user
             chown "$_REMOTE_USER:$_REMOTE_USER" "$PROFILE_FILE"
         fi
@@ -172,4 +172,4 @@ echo "Usage examples:"
 echo "  hello-world                    # Use default settings"
 echo "  hello-world --help             # Show help"
 echo "  hello-world --greeting Hi      # Custom greeting"
-echo "  hello-world --date             # Include current date" 
+echo "  hello-world --date             # Include current date"
