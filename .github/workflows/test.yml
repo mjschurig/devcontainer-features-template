@@ -253,17 +253,24 @@ jobs:
 
       - name: Test feature combinations
         run: |
-          # Create a temporary devcontainer.json to test feature combinations
-          mkdir -p .test-combinations/.devcontainer
-          cat > .test-combinations/.devcontainer/devcontainer.json << 'EOF'
+          # Backup existing devcontainer config if it exists
+          if [ -f ".devcontainer/devcontainer.json" ]; then
+            echo "Backing up existing devcontainer.json..."
+            cp .devcontainer/devcontainer.json .devcontainer/devcontainer.json.backup
+          fi
+
+          # Create temporary devcontainer.json for testing feature combinations
+          echo "Creating temporary devcontainer configuration for testing..."
+          mkdir -p .devcontainer
+          cat > .devcontainer/devcontainer.json << 'EOF'
           {
             "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
             "features": {
-              "../src/hello-world": {
+              "./src/hello-world": {
                 "greeting": "Hi",
                 "name": "CI"
               },
-              "../src/hello-universe": {
+              "./src/hello-universe": {
                 "scope": "galaxy",
                 "language": "spanish"
               }
@@ -273,9 +280,18 @@ jobs:
 
           # Test the combination
           echo "Testing feature combinations with devcontainer CLI..."
-          devcontainer up --workspace-folder .test-combinations
-          devcontainer exec --workspace-folder .test-combinations hello-world
-          devcontainer exec --workspace-folder .test-combinations hello-universe
+          devcontainer up --workspace-folder .
+          devcontainer exec --workspace-folder . hello-world
+          devcontainer exec --workspace-folder . hello-universe
+
+          # Restore original devcontainer config if it existed
+          if [ -f ".devcontainer/devcontainer.json.backup" ]; then
+            echo "Restoring original devcontainer.json..."
+            mv .devcontainer/devcontainer.json.backup .devcontainer/devcontainer.json
+          else
+            echo "Cleaning up temporary devcontainer.json..."
+            rm .devcontainer/devcontainer.json
+          fi
 
   security-scan:
     runs-on: ubuntu-latest
