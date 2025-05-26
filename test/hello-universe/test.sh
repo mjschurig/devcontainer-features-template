@@ -2,7 +2,55 @@
 set -e
 
 # Import test utilities
-source "$(dirname "$0")/../_global/test-utils.sh"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TEST_UTILS_PATH="$SCRIPT_DIR/../_global/test-utils.sh"
+
+# Try multiple possible paths for test utilities
+if [ -f "$TEST_UTILS_PATH" ]; then
+    source "$TEST_UTILS_PATH"
+elif [ -f "/workspaces/*/test/_global/test-utils.sh" ]; then
+    source /workspaces/*/test/_global/test-utils.sh
+elif [ -f "test/_global/test-utils.sh" ]; then
+    source "test/_global/test-utils.sh"
+else
+    echo "WARNING: test-utils.sh not found, defining basic functions..."
+    # Define basic functions if test-utils.sh is not available
+    check_command() {
+        local cmd=$1
+        if command -v "$cmd" >/dev/null 2>&1; then
+            echo "✓ Command '$cmd' is available"
+            return 0
+        else
+            echo "ERROR: Command '$cmd' not found"
+            return 1
+        fi
+    }
+    
+    check_env_var() {
+        local var=$1
+        local expected=$2
+        local actual="${!var}"
+        
+        if [ "$actual" = "$expected" ]; then
+            echo "✓ Environment variable '$var' = '$actual' (correct)"
+            return 0
+        else
+            echo "ERROR: Environment variable '$var' expected '$expected', got '$actual'"
+            return 1
+        fi
+    }
+    
+    check_file() {
+        local file=$1
+        if [ -f "$file" ]; then
+            echo "✓ File '$file' exists"
+            return 0
+        else
+            echo "ERROR: File '$file' not found"
+            return 1
+        fi
+    }
+fi
 
 echo "Testing hello-universe feature..."
 

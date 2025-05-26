@@ -41,5 +41,5 @@
   "dependsOn": {
     "ghcr.io/devcontainers/features/common-utils:2": {}
   },
-  "installsAfter": ["hello-world"]
+  "installsAfter": ["./hello-world"]
 }
