@@ -38,18 +38,24 @@ Add features to your `devcontainer.json`:
    - Open the repository in VS Code
    - When prompted, click "Reopen in Container"
    - Or use Command Palette: `Dev Containers: Reopen in Container`
+   - Global commands will be automatically set up during container creation
 
 3. **Test features locally**:
 
+   The dev container automatically sets up global commands for easy testing:
+
    ```bash
-   # Test a specific feature
+   # Using global commands (recommended - work from any directory)
+   test-feature hello-world
+   test-all
+   validate-feature hello-world
+   build-feature hello-world
+
+   # Or using scripts directly
    ./scripts/test-feature.sh hello-world
-
-   # Test all features
    ./scripts/test-all.sh
-
-   # Validate feature structure
    ./scripts/validate-feature.sh hello-world
+   ./scripts/build-feature.sh hello-world
    ```
 
 ## 📦 Available Features
@@ -114,18 +120,45 @@ An advanced feature showcasing complex installation patterns and multiple tools.
 
 4. **Validate and test**:
    ```bash
+   # Using global commands (recommended)
+   validate-feature my-feature
+   test-feature my-feature
+
+   # Or using scripts directly
    ./scripts/validate-feature.sh my-feature
    ./scripts/test-feature.sh my-feature
    ```
 
 ### Development Scripts
 
-| Script                        | Description                |
-| ----------------------------- | -------------------------- |
-| `scripts/test-feature.sh`     | Test individual feature    |
-| `scripts/test-all.sh`         | Test all features          |
-| `scripts/validate-feature.sh` | Validate feature structure |
-| `scripts/build-feature.sh`    | Build feature package      |
+All scripts are available as global commands in the dev container:
+
+| Global Command    | Script                        | Description                |
+| ----------------- | ----------------------------- | -------------------------- |
+| `test-feature`    | `scripts/test-feature.sh`     | Test individual feature    |
+| `test-all`        | `scripts/test-all.sh`         | Test all features          |
+| `validate-feature`| `scripts/validate-feature.sh` | Validate feature structure |
+| `build-feature`   | `scripts/build-feature.sh`    | Build feature package      |
+
+**Note**: Global commands are automatically set up when the dev container starts via the `scripts/setup-global-commands.sh` script. You can use either the global commands (e.g., `test-feature hello-world`) or run the scripts directly (e.g., `./scripts/test-feature.sh hello-world`).
+
+**Global Command Examples**:
+```bash
+# Test a feature from anywhere in the container
+test-feature hello-world
+
+# Test with custom base image
+test-feature hello-world mcr.microsoft.com/devcontainers/base:debian
+
+# Validate feature structure
+validate-feature my-new-feature
+
+# Build feature package
+build-feature hello-world
+
+# Test all features
+test-all
+```
 
 ### Testing
 
@@ -140,6 +173,17 @@ The repository includes comprehensive testing:
 Run tests locally:
 
 ```bash
+# Using global commands (recommended)
+# Test specific feature against specific base image
+test-feature hello-world mcr.microsoft.com/devcontainers/base:debian
+
+# Test all features in parallel
+BASE_IMAGES="ubuntu:22.04,debian:bullseye" test-all . true
+
+# Test only specific features
+FEATURES="hello-world" test-all
+
+# Or using scripts directly
 # Test specific feature against specific base image
 ./scripts/test-feature.sh hello-world mcr.microsoft.com/devcontainers/base:debian
 

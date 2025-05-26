@@ -46,7 +46,7 @@
     "source=devcontainer-features-node-modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
   ],
 
-  "postCreateCommand": "npm install -g @devcontainers/cli && chmod +x scripts/*.sh",
+  "postCreateCommand": "npm install -g @devcontainers/cli && chmod +x scripts/*.sh && ./scripts/setup-global-commands.sh",
 
   "forwardPorts": [],
 
