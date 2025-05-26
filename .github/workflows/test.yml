@@ -259,9 +259,14 @@ jobs:
             cp .devcontainer/devcontainer.json .devcontainer/devcontainer.json.backup
           fi
 
+          # Copy features to .devcontainer folder temporarily for testing
+          echo "Setting up temporary feature structure for testing..."
+          mkdir -p .devcontainer/src
+          cp -r src/hello-world .devcontainer/src/
+          cp -r src/hello-universe .devcontainer/src/
+
           # Create temporary devcontainer.json for testing feature combinations
           echo "Creating temporary devcontainer configuration for testing..."
-          mkdir -p .devcontainer
           cat > .devcontainer/devcontainer.json << 'EOF'
           {
             "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
@@ -284,12 +289,15 @@ jobs:
           devcontainer exec --workspace-folder . hello-world
           devcontainer exec --workspace-folder . hello-universe
 
-          # Restore original devcontainer config if it existed
+          # Cleanup: Remove temporary features and restore original config
+          echo "Cleaning up temporary files..."
+          rm -rf .devcontainer/src
+
           if [ -f ".devcontainer/devcontainer.json.backup" ]; then
             echo "Restoring original devcontainer.json..."
             mv .devcontainer/devcontainer.json.backup .devcontainer/devcontainer.json
           else
-            echo "Cleaning up temporary devcontainer.json..."
+            echo "Removing temporary devcontainer.json..."
             rm .devcontainer/devcontainer.json
           fi
 
