@@ -72,22 +72,21 @@ fi
 TEST_DIR="$WORKSPACE_DIR/test/$FEATURE_NAME"
 if [ -d "$TEST_DIR" ]; then
     echo "Using test directory: $TEST_DIR"
-    TEST_ARGS="--test-folder $TEST_DIR"
+    echo "Project folder: $WORKSPACE_DIR"
 else
     echo "WARNING: No test directory found at $TEST_DIR"
     echo "Running basic feature test without custom tests"
-    TEST_ARGS=""
 fi
 
 # Run the test
 echo "Running devcontainer features test..."
-echo "Command: devcontainer features test --features $FEATURE_DIR --base-image $BASE_IMAGE $TEST_ARGS"
+echo "Command: devcontainer features test --project-folder $WORKSPACE_DIR --features $FEATURE_NAME --base-image $BASE_IMAGE"
 echo ""
 
 if devcontainer features test \
-    --features "$FEATURE_DIR" \
-    --base-image "$BASE_IMAGE" \
-    $TEST_ARGS; then
+    --project-folder "$WORKSPACE_DIR" \
+    --features "$FEATURE_NAME" \
+    --base-image "$BASE_IMAGE"; then
     echo ""
     echo "✅ Feature test completed successfully!"
 else
