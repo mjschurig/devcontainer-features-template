@@ -62,7 +62,8 @@ echo "Test 3: Checking basic functionality"
 BASIC_OUTPUT=$(hello-world)
 # The test framework might override the name parameter, so let's be more flexible
 # Check that it contains a greeting pattern rather than exact text
-if echo "$BASIC_OUTPUT" | grep -qE "(Hello|Hi|Hey|Greetings), [A-Za-z]+!"; then
+# Allow for system names that may contain spaces, slashes, and other characters
+if echo "$BASIC_OUTPUT" | grep -qE "(Hello|Hi|Hey|Greetings), .+!"; then
     echo "✓ Basic greeting works: $BASIC_OUTPUT"
 else
     echo "ERROR: Basic greeting failed: $BASIC_OUTPUT"

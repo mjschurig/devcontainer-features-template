@@ -95,10 +95,18 @@ jobs:
         timeout-minutes: 5
         continue-on-error: true
 
-      - name: Checkout fallback
+      - name: Retry checkout if failed
+        if: failure()
+        uses: actions/checkout@v3  # Fallback to older version
+        with:
+          fetch-depth: 1
+        timeout-minutes: 5
+        continue-on-error: true
+
+      - name: Manual checkout fallback
         if: failure()
         run: |
-          echo "Standard checkout failed, trying manual git clone..."
+          echo "Both checkout actions failed, trying manual git clone..."
           git clone --depth=1 ${{ github.server_url }}/${{ github.repository }} .
           git checkout ${{ github.sha }}
 
@@ -138,10 +146,18 @@ jobs:
         timeout-minutes: 5
         continue-on-error: true
 
-      - name: Checkout fallback
+      - name: Retry checkout if failed
+        if: failure()
+        uses: actions/checkout@v3  # Fallback to older version
+        with:
+          fetch-depth: 1
+        timeout-minutes: 5
+        continue-on-error: true
+
+      - name: Manual checkout fallback
         if: failure()
         run: |
-          echo "Standard checkout failed, trying manual git clone..."
+          echo "Both checkout actions failed, trying manual git clone..."
           git clone --depth=1 ${{ github.server_url }}/${{ github.repository }} .
           git checkout ${{ github.sha }}
 
@@ -191,10 +207,18 @@ jobs:
         timeout-minutes: 5
         continue-on-error: true
 
-      - name: Checkout fallback
+      - name: Retry checkout if failed
+        if: failure()
+        uses: actions/checkout@v3  # Fallback to older version
+        with:
+          fetch-depth: 1
+        timeout-minutes: 5
+        continue-on-error: true
+
+      - name: Manual checkout fallback
         if: failure()
         run: |
-          echo "Standard checkout failed, trying manual git clone..."
+          echo "Both checkout actions failed, trying manual git clone..."
           git clone --depth=1 ${{ github.server_url }}/${{ github.repository }} .
           git checkout ${{ github.sha }}
 
@@ -258,8 +282,23 @@ jobs:
         feature: ${{ fromJson(needs.detect-changes.outputs.features_json) }}
 
     steps:
-      - name: Checkout
+      - name: Checkout (with retry)
         uses: actions/checkout@v4
+        timeout-minutes: 5
+        continue-on-error: true
+
+      - name: Retry checkout if failed
+        if: failure()
+        uses: actions/checkout@v3  # Fallback to older version
+        timeout-minutes: 5
+        continue-on-error: true
+
+      - name: Manual checkout fallback
+        if: failure()
+        run: |
+          echo "Both checkout actions failed, trying manual git clone..."
+          git clone --depth=1 ${{ github.server_url }}/${{ github.repository }} .
+          git checkout ${{ github.sha }}
 
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@2.0.0
@@ -310,10 +349,18 @@ jobs:
         timeout-minutes: 5
         continue-on-error: true
 
-      - name: Checkout fallback
+      - name: Retry checkout if failed
+        if: failure()
+        uses: actions/checkout@v3  # Fallback to older version
+        with:
+          fetch-depth: 1
+        timeout-minutes: 5
+        continue-on-error: true
+
+      - name: Manual checkout fallback
         if: failure()
         run: |
-          echo "Standard checkout failed, trying manual git clone..."
+          echo "Both checkout actions failed, trying manual git clone..."
           git clone --depth=1 ${{ github.server_url }}/${{ github.repository }} .
           git checkout ${{ github.sha }}
 
