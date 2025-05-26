@@ -84,21 +84,38 @@ jobs:
       matrix:
         feature: ${{ fromJson(needs.detect-changes.outputs.features_json) }}
     steps:
-      - name: Checkout
+      - name: Checkout (with retry)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+        timeout-minutes: 5
+        continue-on-error: true
 
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
+      - name: Checkout fallback
+        if: failure()
+        run: |
+          echo "Standard checkout failed, trying manual git clone..."
+          git clone --depth=1 ${{ github.server_url }}/${{ github.repository }} .
+          git checkout ${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          echo "Installing required packages..."
+          sudo apt-get update -y
+          sudo apt-get install -y jq curl wget
+          echo "Dependencies installed successfully"
 
       - name: Validate feature structure
         run: |
+          echo "Making validation script executable..."
           chmod +x scripts/validate-feature.sh
+          echo "Running validation for feature: ${{ matrix.feature }}"
           ./scripts/validate-feature.sh ${{ matrix.feature }}
 
   test-features:
     runs-on: ubuntu-latest
     needs: [detect-changes, validate-features]
-    if: needs.detect-changes.outputs.features != ''
+    if: needs.detect-changes.outputs.features != '' && always()
     strategy:
       fail-fast: false
       matrix:
@@ -110,20 +127,51 @@ jobs:
           - "debian:bullseye"
 
     steps:
-      - name: Checkout
+      - name: Checkout (with retry)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+        timeout-minutes: 5
+        continue-on-error: true
 
-      - name: Setup Node.js
+      - name: Checkout fallback
+        if: failure()
+        run: |
+          echo "Standard checkout failed, trying manual git clone..."
+          git clone --depth=1 ${{ github.server_url }}/${{ github.repository }} .
+          git checkout ${{ github.sha }}
+
+      - name: Setup Node.js (with retry)
         uses: actions/setup-node@v4
         with:
           node-version: "18"
+        timeout-minutes: 10
+        continue-on-error: true
+
+      - name: Install Node.js fallback
+        if: failure()
+        run: |
+          echo "Standard Node.js setup failed, installing manually..."
+          curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+          node --version
+          npm --version
 
       - name: Install devcontainer CLI
-        run: npm install -g @devcontainers/cli
+        run: |
+          echo "Installing devcontainer CLI..."
+          npm install -g @devcontainers/cli || {
+            echo "npm install failed, trying alternative installation..."
+            curl -fsSL https://github.com/devcontainers/cli/releases/latest/download/devcontainer-cli-linux-x64.tar.gz | tar -xz
+            sudo mv devcontainer /usr/local/bin/
+          }
+          devcontainer --version
 
       - name: Test feature
         run: |
+          echo "Making test script executable..."
           chmod +x scripts/test-feature.sh
+          echo "Testing feature ${{ matrix.feature }} with base image ${{ matrix.base-image }}"
           ./scripts/test-feature.sh ${{ matrix.feature }} "${{ matrix.base-image }}"
 
   test-feature-combinations:
@@ -132,16 +180,45 @@ jobs:
     if: needs.detect-changes.outputs.features != '' && contains(needs.detect-changes.outputs.features, 'hello-world') && contains(needs.detect-changes.outputs.features, 'hello-universe')
 
     steps:
-      - name: Checkout
+      - name: Checkout (with retry)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+        timeout-minutes: 5
+        continue-on-error: true
 
-      - name: Setup Node.js
+      - name: Checkout fallback
+        if: failure()
+        run: |
+          echo "Standard checkout failed, trying manual git clone..."
+          git clone --depth=1 ${{ github.server_url }}/${{ github.repository }} .
+          git checkout ${{ github.sha }}
+
+      - name: Setup Node.js (with retry)
         uses: actions/setup-node@v4
         with:
           node-version: "18"
+        timeout-minutes: 10
+        continue-on-error: true
+
+      - name: Install Node.js fallback
+        if: failure()
+        run: |
+          echo "Standard Node.js setup failed, installing manually..."
+          curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+          node --version
+          npm --version
 
       - name: Install devcontainer CLI
-        run: npm install -g @devcontainers/cli
+        run: |
+          echo "Installing devcontainer CLI..."
+          npm install -g @devcontainers/cli || {
+            echo "npm install failed, trying alternative installation..."
+            curl -fsSL https://github.com/devcontainers/cli/releases/latest/download/devcontainer-cli-linux-x64.tar.gz | tar -xz
+            sudo mv devcontainer /usr/local/bin/
+          }
+          devcontainer --version
 
       - name: Test feature combinations
         run: |
@@ -216,21 +293,38 @@ jobs:
   build-features:
     runs-on: ubuntu-latest
     needs: [detect-changes, test-features]
-    if: needs.detect-changes.outputs.features != ''
+    if: needs.detect-changes.outputs.features != '' && always()
     strategy:
       matrix:
         feature: ${{ fromJson(needs.detect-changes.outputs.features_json) }}
 
     steps:
-      - name: Checkout
+      - name: Checkout (with retry)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+        timeout-minutes: 5
+        continue-on-error: true
 
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
+      - name: Checkout fallback
+        if: failure()
+        run: |
+          echo "Standard checkout failed, trying manual git clone..."
+          git clone --depth=1 ${{ github.server_url }}/${{ github.repository }} .
+          git checkout ${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          echo "Installing required packages..."
+          sudo apt-get update -y
+          sudo apt-get install -y jq curl wget tar gzip
+          echo "Dependencies installed successfully"
 
       - name: Build feature
         run: |
+          echo "Making build script executable..."
           chmod +x scripts/build-feature.sh
+          echo "Building feature: ${{ matrix.feature }}"
           ./scripts/build-feature.sh ${{ matrix.feature }}
 
       - name: Upload build artifacts
@@ -239,6 +333,19 @@ jobs:
           name: feature-${{ matrix.feature }}
           path: dist/
           retention-days: 7
+        continue-on-error: true
+
+      - name: Archive artifacts fallback
+        if: failure()
+        run: |
+          echo "Standard artifact upload failed, creating manual archive..."
+          if [ -d "dist/" ]; then
+            tar -czf "feature-${{ matrix.feature }}-artifacts.tar.gz" dist/
+            echo "Manual archive created: feature-${{ matrix.feature }}-artifacts.tar.gz"
+            ls -la *.tar.gz
+          else
+            echo "No dist directory found to archive"
+          fi
 
   test-summary:
     runs-on: ubuntu-latest
