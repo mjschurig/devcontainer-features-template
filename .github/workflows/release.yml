@@ -67,11 +67,19 @@ jobs:
             FEATURES=$(ls src/ | tr '\n' ' ')
           fi
 
-          # Clean up and convert to JSON array
-          FEATURES=$(echo "$FEATURES" | sed 's/ $//')
-          FEATURES_ARRAY=$(echo "$FEATURES" | tr ' ' '\n' | jq -R . | jq -s .)
+          # Clean up feature list and convert to JSON array
+          FEATURES=$(echo "$FEATURES" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+          # Filter out empty strings and create JSON array
+          FEATURES_ARRAY=$(echo "$FEATURES" | tr ' ' '\n' | sed '/^[[:space:]]*$/d' | jq -R . | jq -s .)
+
+          # Validate JSON format
+          if ! echo "$FEATURES_ARRAY" | jq empty 2>/dev/null; then
+            echo "ERROR: Invalid JSON format in features array: $FEATURES_ARRAY"
+            exit 1
+          fi
 
           echo "Features to publish: $FEATURES"
+          echo "Features JSON array: $FEATURES_ARRAY"
           echo "features=$FEATURES" >> $GITHUB_OUTPUT
           echo "features_json=$FEATURES_ARRAY" >> $GITHUB_OUTPUT
 
