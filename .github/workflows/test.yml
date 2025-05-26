@@ -42,10 +42,28 @@ jobs:
             FEATURES=$(ls src/ | tr '\n' ' ')
           fi
 
-          # Clean up feature list and convert to JSON array
+                    # Clean up feature list
           FEATURES=$(echo "$FEATURES" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
-          # Filter out empty strings and create JSON array
-          FEATURES_ARRAY=$(echo "$FEATURES" | tr ' ' '\n' | sed '/^[[:space:]]*$/d' | jq -R . | jq -s .)
+
+          # Create JSON array using a more reliable method
+          if [ -n "$FEATURES" ]; then
+            # Convert space-separated list to JSON array
+            FEATURES_ARRAY="["
+            FIRST=true
+            for feature in $FEATURES; do
+              if [ -n "$feature" ]; then
+                if [ "$FIRST" = true ]; then
+                  FEATURES_ARRAY="${FEATURES_ARRAY}\"$feature\""
+                  FIRST=false
+                else
+                  FEATURES_ARRAY="${FEATURES_ARRAY},\"$feature\""
+                fi
+              fi
+            done
+            FEATURES_ARRAY="${FEATURES_ARRAY}]"
+          else
+            FEATURES_ARRAY="[]"
+          fi
 
           # Validate JSON format
           if ! echo "$FEATURES_ARRAY" | jq empty 2>/dev/null; then
