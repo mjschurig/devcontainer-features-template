@@ -12,6 +12,7 @@ env:
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       features: ${{ steps.changes.outputs.features }}
       features_json: ${{ steps.changes.outputs.features_json }}
@@ -20,9 +21,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+        timeout-minutes: 5
+        continue-on-error: false
 
       - name: Detect changed features
         id: changes
+        timeout-minutes: 5
         run: |
           # Get list of changed files
           if [ "${{ github.event_name }}" = "pull_request" ]; then
